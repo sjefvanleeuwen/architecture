@@ -1,0 +1,41 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component diagram for Core Service
+
+Container(apiGateway, "API Gateway", "Azure API Management", "Routes requests to appropriate services")
+Container(graphqlApi, "GraphQL API", "Hot Chocolate/.NET", "Provides unified GraphQL schema for clients")
+ContainerDb(database, "Database", "Azure Cosmos DB", "Stores user, product, and order information")
+System_Ext(emailSystem, "Email System", "Azure Communication Services")
+System_Ext(paymentSystem, "Payment System", "Processes payments")
+
+Container_Boundary(coreService, "Core Service") {
+    Component(orderResolver, "Order Resolver", "GraphQL Resolver", "Handles order-related GraphQL queries and mutations")
+    Component(productResolver, "Product Resolver", "GraphQL Resolver", "Handles product-related GraphQL queries and mutations")
+    Component(orderService, "Order Service", ".NET Service", "Handles order business logic")
+    Component(productService, "Product Service", ".NET Service", "Handles product business logic")
+    Component(notificationService, "Notification Service", ".NET Service", "Handles notification logic")
+    Component(paymentAdapter, "Payment Adapter", ".NET Service", "Adapts to payment gateway API")
+    Component(orderRepository, "Order Repository", "EF Core/Cosmos SDK", "Provides data access for orders")
+    Component(productRepository, "Product Repository", "EF Core/Cosmos SDK", "Provides data access for products")
+}
+
+Rel(graphqlApi, orderResolver, "Delegates GraphQL operations to")
+Rel(graphqlApi, productResolver, "Delegates GraphQL operations to")
+
+Rel(orderResolver, orderService, "Uses")
+Rel(productResolver, productService, "Uses")
+
+Rel(orderService, orderRepository, "Uses")
+Rel(orderService, notificationService, "Uses")
+Rel(orderService, paymentAdapter, "Uses")
+Rel(productService, productRepository, "Uses")
+
+Rel(orderRepository, database, "Reads from and writes to")
+Rel(productRepository, database, "Reads from and writes to")
+Rel(notificationService, emailSystem, "Sends emails using")
+Rel(paymentAdapter, paymentSystem, "Makes payments using")
+
+@enduml

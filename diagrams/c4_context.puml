@@ -1,0 +1,18 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context diagram for Order Management System
+
+Person(customer, "Customer", "A user of the system")
+System(systemAliasName, "Order Management System", "Provides order management functionality to customers")
+System_Ext(emailSystem, "Email System", "Azure Communication Services")
+System_Ext(paymentSystem, "Payment System", "Processes payments")
+
+Rel(customer, systemAliasName, "Uses")
+Rel(systemAliasName, emailSystem, "Sends emails using")
+Rel(systemAliasName, paymentSystem, "Makes payments using")
+Rel(paymentSystem, customer, "Confirms payment to")
+
+@enduml
