@@ -1,0 +1,37 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container diagram for CDR Aggregation System
+
+Person(operator, "System Operator", "Monitors and manages the CDR aggregation system")
+Person(dataAnalyst, "Data Analyst", "Uses aggregate data for reports and insights")
+
+System_Ext(tandemdriveSystem, "TandemDrive System", "External system that provides webhook data")
+System_Ext(reportingSystem, "Reporting System", "Consumes aggregated charging data")
+System_Ext(billingSystem, "Billing System", "Uses aggregated data for customer billing")
+
+System_Boundary(cdrAggregation, "CDR Aggregation System") {
+    Container(frontDoor, "Azure Front Door", "WAF Enabled", "Provides secure global access point with Web Application Firewall")
+    Container(webhookApi, "Webhook API", "Azure Function, HTTP Trigger", "Receives data from TandemDrive via webhook")
+    Container(cdrProcessor, "CDR Processor", "Azure Function", "Validates, journals, and aggregates CDR data")
+    Container(replayFunction, "Replay Function", "Azure Function, Timer Trigger", "Reprocesses historical CDR data when needed")
+    ContainerDb(journalStorage, "Journal Storage", "Azure Blob Storage", "Stores raw CDR data for audit and replay")
+    ContainerDb(aggregateStorage, "Aggregate Storage", "Azure Table Storage", "Stores aggregated CDR data")
+    Container(monitoringDashboard, "Monitoring Dashboard", "Azure Application Insights", "Monitors system health and performance")
+}
+
+Rel(tandemdriveSystem, frontDoor, "Sends data via webhook", "HTTPS/POST")
+Rel(frontDoor, webhookApi, "Forwards validated requests")
+Rel(webhookApi, cdrProcessor, "Triggers with CDR payload")
+Rel(cdrProcessor, journalStorage, "Stores raw CDR data")
+Rel(cdrProcessor, aggregateStorage, "Updates aggregated values")
+Rel(replayFunction, journalStorage, "Reads historical CDR data")
+Rel(replayFunction, aggregateStorage, "Recomputes aggregates")
+Rel(aggregateStorage, reportingSystem, "Provides data to")
+Rel(aggregateStorage, billingSystem, "Provides data to")
+Rel(operator, monitoringDashboard, "Monitors")
+Rel(dataAnalyst, reportingSystem, "Analyzes data with")
+
+@enduml

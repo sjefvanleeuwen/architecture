@@ -1,0 +1,20 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context diagram for CDR Aggregation System
+
+Person(operator, "System Operator", "Monitors and manages the CDR aggregation system")
+Person(dataAnalyst, "Data Analyst", "Uses aggregate data for reports and insights")
+
+System(cdrAggregationSystem, "CDR Aggregation System", "Receives, processes, and aggregates charge detail records")
+System_Ext(tandemdriveSystem, "TandemDrive System", "External system that provides webhook data")
+System_Ext(reportingSystem, "Reporting System", "Consumes aggregated charging data")
+
+Rel(tandemdriveSystem, cdrAggregationSystem, "Sends data via webhook")
+Rel(cdrAggregationSystem, reportingSystem, "Provides aggregated data to")
+Rel(operator, cdrAggregationSystem, "Monitors and manages")
+Rel(dataAnalyst, reportingSystem, "Generates reports using")
+
+@enduml

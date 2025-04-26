@@ -137,6 +137,7 @@ Key entities in the OMS include:
 - Payment
 - Notification
 - Inventory
+- WeeklyAggregate
 
 ```mermaid
 erDiagram
@@ -191,6 +192,19 @@ erDiagram
         int quantity
         int reservedQuantity
         datetime lastUpdated
+    }
+    WEEKLY_AGGREGATE }o--o{ ORDER : summarizes
+    WEEKLY_AGGREGATE {
+        string id
+        string weekId
+        int year
+        int weekNumber
+        datetime startDate
+        datetime endDate
+        decimal totalRevenue
+        int orderCount
+        int itemCount
+        string productCategory
     }
 ```
 
@@ -365,6 +379,20 @@ flowchart LR
 | `ShipmentTracking.ProviderId`, `ShipmentTracking.TrackingNumber` | `OrderSummary.TrackingUrl` | Format as tracking URL if provider exists |
 | `Order.ShippingAddress` | `OrderSummary.ShippingAddress.FormattedAddress` | Format address based on country format rules |
 
+##### Weekly Aggregate Generation Mapping
+
+| Source Fields | Target Field | Transformation Logic |
+|---------------|-------------|----------------------|
+| `Order.CreatedAt` | `WeeklyAggregate.weekId` | Format as `YYYY-WW` using ISO week numbering |
+| `Order.CreatedAt` | `WeeklyAggregate.year` | Extract year |
+| `Order.CreatedAt` | `WeeklyAggregate.weekNumber` | Extract ISO week number (1-53) |
+| `Order.CreatedAt` | `WeeklyAggregate.startDate` | Calculate first day (Monday) of the week |
+| `Order.CreatedAt` | `WeeklyAggregate.endDate` | Calculate last day (Sunday) of the week |
+| `Order.TotalAmount` | `WeeklyAggregate.totalRevenue` | Sum of order amounts in the week |
+| `Order.Id` | `WeeklyAggregate.orderCount` | Count of orders in the week |
+| `OrderItem` | `WeeklyAggregate.itemCount` | Count of items across all orders in the week |
+| `Product.Category` | `WeeklyAggregate.productCategory` | Group by product category |
+
 #### Benefits
 - Prevents tight coupling between system layers
 - Allows independent evolution of domain models and external contracts
@@ -434,6 +462,29 @@ The physical view maps software to hardware infrastructure.
 - Caching: Azure Redis Cache
 - Storage: Azure Blob Storage for product images and reports
 - CDN: Azure CDN for static content delivery
+- Analytics: Azure Data Explorer for weekly aggregation and reporting
+
+### Storage Strategy
+The system employs different storage solutions optimized for specific use cases:
+
+#### Transaction Storage (Azure SQL)
+- Stores orders, products, customers, and inventory data
+- Optimized for ACID transactions and real-time operations
+- Supports complex joins for operational reporting
+
+#### Analytical Storage (Azure Data Explorer)
+- Houses pre-aggregated data for reporting
+- Daily, weekly, and monthly aggregates for performance
+- Optimized for time-series analysis and trend reporting
+- Reduces load on transactional database
+
+#### Aggregate Storage Comparison
+
+| Aggregate Period | Use Case | Update Frequency | Retention | Query Pattern |
+|------------------|----------|------------------|-----------|---------------|
+| Daily | Operational dashboards | Real-time | 90 days | Current day focus |
+| **Weekly** | Trend analysis, sales reporting | Daily | 2 years | Week-over-week comparison |
+| Monthly | Financial reporting, KPI tracking | Daily | 7 years | Month-over-month, YoY |
 
 ### Deployment Diagram
 The OMS is deployed on Azure using containerized microservices orchestrated with AKS:
@@ -520,6 +571,7 @@ flowchart LR
 - GraphQL subscriptions for real-time updates
 - WebHooks for external system integration
 - Support for standard authentication protocols
+- REST endpoints for weekly aggregate data exports
 
 ## References
 - .NET Documentation: https://docs.microsoft.com/en-us/dotnet/
@@ -531,6 +583,16 @@ flowchart LR
 ## Appendices
 ### Appendix A: Decision Records
 Key architectural decisions and their rationales are documented in Architecture Decision Records (ADRs) in the project repository.
+
+#### ADR 8: Weekly Aggregate Implementation
+- **Decision**: Implement weekly aggregates in addition to daily and monthly views
+- **Context**: Business users need week-over-week analysis capabilities for sales reporting
+- **Alternatives Considered**:
+  - On-demand calculation from daily data
+  - Materialized views in the database
+  - Pre-calculated aggregates in separate storage
+- **Decision**: Pre-calculated aggregates in analytical storage for performance
+- **Consequences**: Additional ETL process required, but significantly improved reporting performance
 
 ### Appendix B: Risk Assessment
 Detailed analysis of architectural risks and mitigation strategies.

@@ -1,0 +1,53 @@
+@startuml C4_Deployment
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Deployment diagram for CDR Aggregation System
+
+Deployment_Node(azure, "Microsoft Azure", "Cloud Platform") {
+    Deployment_Node(frontDoorWAF, "Azure Front Door", "WAF Enabled") {
+        Container(wafInstance, "Web Application Firewall", "Azure Service", "Protects webhook endpoints from attacks")
+    }
+    
+    Deployment_Node(functionAppPlan, "App Service Plan", "Consumption") {
+        Deployment_Node(functionApp, "Function App", "CDR Aggregation") {
+            Container(webhookFunction, "Webhook API", "HTTP Triggered Azure Function", "Receives data from TandemDrive")
+            Container(processorFunction, "CDR Processor", "Azure Function", "Processes and aggregates CDR data")
+            Container(replayFunction, "Replay Function", "Timer Triggered Azure Function", "Reprocesses historical data")
+        }
+    }
+    
+    Deployment_Node(storageAccount, "Storage Account", "Standard LRS") {
+        ContainerDb(blobStorage, "Blob Storage", "Journal Container", "Stores raw CDR data")
+        ContainerDb(tableStorage, "Table Storage", "Aggregates", "Stores aggregated data")
+    }
+    
+    Deployment_Node(monitoringServices, "Monitoring Services") {
+        Container(appInsights, "Application Insights", "Azure Service", "System monitoring and analytics")
+        Container(alertRules, "Alert Rules", "Azure Service", "Triggers notifications on defined conditions")
+    }
+    
+    Deployment_Node(keyVault, "Key Vault") {
+        Container(secrets, "Secrets", "Azure Service", "Securely stores connection strings and keys")
+    }
+}
+
+Deployment_Node(externalSystems, "External Systems", "Third Party") {
+    System_Ext(tandemdriveSystemInst, "TandemDrive System", "Generates and sends data via webhook")
+    System_Ext(reportingSystemInst, "Reporting System", "Consumes aggregated data")
+}
+
+Rel(tandemdriveSystemInst, wafInstance, "Sends data via webhook", "HTTPS/POST")
+Rel(wafInstance, webhookFunction, "Forwards validated requests")
+Rel(webhookFunction, processorFunction, "Triggers")
+Rel(processorFunction, blobStorage, "Stores CDRs")
+Rel(processorFunction, tableStorage, "Updates aggregates")
+Rel(replayFunction, blobStorage, "Reads historical CDRs")
+Rel(replayFunction, tableStorage, "Recalculates aggregates")
+Rel(reportingSystemInst, tableStorage, "Queries aggregate data", "HTTPS/GET")
+Rel(functionApp, appInsights, "Sends telemetry")
+Rel(appInsights, alertRules, "Triggers alerts")
+Rel(functionApp, secrets, "Retrieves secrets")
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component diagram for CDR Processor
+
+Container(webhookApi, "Webhook API", "Azure Function, HTTP Trigger", "Receives CDR data from external systems")
+ContainerDb(journalStorage, "Journal Storage", "Azure Blob Storage", "Stores raw CDR data")
+ContainerDb(aggregateStorage, "Aggregate Storage", "Azure Table Storage", "Stores aggregated CDR data")
+
+Container_Boundary(cdrProcessor, "CDR Processor") {
+    Component(validationComponent, "Validation Component", "C# Class", "Validates incoming CDR data")
+    Component(idempotencyChecker, "Idempotency Checker", "C# Class", "Checks for duplicate CDRs")
+    Component(journalService, "Journal Service", "C# Class", "Handles storing CDRs in Blob Storage")
+    Component(aggregationService, "Aggregation Service", "C# Class", "Updates aggregate statistics")
+    Component(blobStorageClient, "Blob Storage Client", "Azure SDK", "Interfaces with Azure Blob Storage")
+    Component(tableStorageClient, "Table Storage Client", "Azure SDK", "Interfaces with Azure Table Storage")
+    Component(telemetryService, "Telemetry Service", "C# Class", "Logs events and metrics")
+}
+
+Rel(webhookApi, validationComponent, "Sends CDR data to")
+Rel(validationComponent, idempotencyChecker, "Passes validated CDR to")
+Rel(idempotencyChecker, journalService, "If new CDR, passes to")
+Rel(journalService, blobStorageClient, "Uses")
+Rel(blobStorageClient, journalStorage, "Writes to")
+Rel(idempotencyChecker, aggregationService, "If new CDR, triggers")
+Rel(aggregationService, tableStorageClient, "Uses")
+Rel(tableStorageClient, aggregateStorage, "Reads from and writes to")
+Rel_Back(idempotencyChecker, blobStorageClient, "Checks for existing CDR ID")
+
+Rel(validationComponent, telemetryService, "Logs validation results")
+Rel(idempotencyChecker, telemetryService, "Logs duplicate detection")
+Rel(journalService, telemetryService, "Logs journal operations")
+Rel(aggregationService, telemetryService, "Logs aggregation events")
+
+@enduml
