@@ -1,0 +1,34 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context diagram for E-Learning Community Platform
+
+Person(contentCreator, "Content Creator", "Creates learning paths, modules, and assigns reviewers")
+Person(learner, "Learner", "Follows learning paths, completes assignments, earns certifications")
+Person(reviewer, "Reviewer", "Reviews and grades assignments, provides feedback")
+Person(admin, "Administrator", "Manages platform settings and user access")
+
+System(elearningSystem, "E-Learning Community Platform", "Enables creation and consumption of educational content, assignments, and certification")
+
+System_Ext(youtubeSystem, "YouTube", "Video hosting platform")
+System_Ext(calendarSystem, "Calendar Service", "Manages event scheduling")
+System_Ext(emailSystem, "Email Service", "Sends notifications and alerts")
+System_Ext(authSystem, "Authentication Provider", "Identity management")
+
+Rel(contentCreator, elearningSystem, "Creates learning content and paths")
+Rel(learner, elearningSystem, "Follows learning paths, submits assignments")
+Rel(reviewer, elearningSystem, "Reviews and grades assignments")
+Rel(admin, elearningSystem, "Manages platform and users")
+
+Rel(elearningSystem, youtubeSystem, "Embeds videos from")
+Rel(elearningSystem, calendarSystem, "Schedules events using")
+Rel(elearningSystem, emailSystem, "Sends notifications through")
+Rel(elearningSystem, authSystem, "Authenticates users via")
+
+Rel(emailSystem, learner, "Sends notifications to")
+Rel(emailSystem, contentCreator, "Sends notifications to")
+Rel(emailSystem, reviewer, "Sends notifications to")
+
+@enduml

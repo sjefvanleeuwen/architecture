@@ -1,0 +1,57 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component diagram for Learning Service
+
+Container(webApp, "Web Application", "Blazor WASM", "Provides the user interface for all platform functionality")
+Container(graphqlApi, "GraphQL API", "Hot Chocolate, .NET 9", "Provides a unified GraphQL schema")
+ContainerDb(learningDb, "Learning Database", "SQL Server", "Stores learning content, paths, and modules")
+ContainerDb(userDb, "User Database", "SQL Server", "Stores user profiles and progress")
+System_Ext(youtubeSystem, "YouTube", "Video hosting platform")
+System_Ext(calendarSystem, "Calendar Service", "Manages event scheduling")
+Container(eventBus, "Event Bus", "Azure Service Bus", "Handles asynchronous communication between services")
+
+Container_Boundary(learningService, "Learning Service") {
+    Component(learningPathManager, "Learning Path Manager", ".NET 9 Service", "Manages creation and structure of learning paths")
+    Component(moduleManager, "Module Manager", ".NET 9 Service", "Handles individual modules within learning paths")
+    Component(contentManager, "Content Manager", ".NET 9 Service", "Manages educational content and resources")
+    Component(calendarIntegration, "Calendar Integration", ".NET 9 Service", "Integrates with calendar services")
+    Component(youtubeIntegration, "YouTube Integration", ".NET 9 Service", "Handles YouTube video embedding")
+    Component(eventManager, "Event Manager", ".NET 9 Service", "Manages learning events and schedules")
+    Component(enrollmentManager, "Enrollment Manager", ".NET 9 Service", "Handles user enrollment in learning paths")
+    Component(progressTracker, "Progress Tracker", ".NET 9 Service", "Tracks user progress through learning paths")
+    Component(learningRepository, "Learning Repository", "EF Core", "Provides data access for learning content")
+}
+
+Rel(graphqlApi, learningPathManager, "Sends learning path operations to")
+Rel(graphqlApi, moduleManager, "Sends module operations to")
+Rel(graphqlApi, contentManager, "Sends content operations to")
+Rel(graphqlApi, eventManager, "Sends event operations to")
+Rel(graphqlApi, enrollmentManager, "Sends enrollment operations to")
+Rel(graphqlApi, progressTracker, "Sends progress queries to")
+
+Rel(learningPathManager, moduleManager, "Uses")
+Rel(moduleManager, contentManager, "Uses")
+Rel(eventManager, calendarIntegration, "Uses")
+Rel(contentManager, youtubeIntegration, "Uses")
+
+Rel(learningPathManager, learningRepository, "Uses")
+Rel(moduleManager, learningRepository, "Uses")
+Rel(contentManager, learningRepository, "Uses")
+Rel(eventManager, learningRepository, "Uses")
+Rel(enrollmentManager, learningRepository, "Uses")
+Rel(progressTracker, learningRepository, "Uses")
+
+Rel(learningRepository, learningDb, "Reads from and writes to")
+Rel(enrollmentManager, userDb, "Reads from and writes to")
+Rel(progressTracker, userDb, "Reads from and writes to")
+
+Rel(youtubeIntegration, youtubeSystem, "Embeds videos from", "HTTPS")
+Rel(calendarIntegration, calendarSystem, "Schedules events using", "HTTPS")
+
+Rel(eventManager, eventBus, "Publishes learning events to")
+Rel(enrollmentManager, eventBus, "Publishes enrollment events to")
+
+@enduml

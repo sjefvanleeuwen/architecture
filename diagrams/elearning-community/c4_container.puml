@@ -1,0 +1,70 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container diagram for E-Learning Community Platform
+
+Person(contentCreator, "Content Creator", "Creates learning paths, modules, and assigns reviewers")
+Person(learner, "Learner", "Follows learning paths, completes assignments, earns certifications")
+Person(reviewer, "Reviewer", "Reviews and grades assignments, provides feedback")
+Person(admin, "Administrator", "Manages platform settings and user access")
+
+System_Ext(youtubeSystem, "YouTube", "Video hosting platform")
+System_Ext(calendarSystem, "Calendar Service", "Manages event scheduling")
+System_Ext(emailSystem, "Email Service", "Sends notifications and alerts")
+System_Ext(authSystem, "Authentication Provider", "Identity management")
+
+System_Boundary(elearningSystem, "E-Learning Community Platform") {
+    Container(webApp, "Web Application", "Blazor WASM, .NET 9", "Provides the user interface for all platform functionality")
+    
+    Container(apiGateway, "API Gateway", "Azure API Management", "Routes requests and handles API management")
+    
+    Container(graphqlApi, "GraphQL API", "Hot Chocolate, .NET 9", "Provides a unified GraphQL schema for the web application")
+    
+    Container(learningService, "Learning Service", ".NET 9", "Manages learning paths, modules, and content")
+    Container(assignmentService, "Assignment Service", ".NET 9", "Handles assignment submissions and reviews")
+    Container(forumService, "Forum Service", ".NET 9", "Provides discussion forum capabilities")
+    Container(certificationService, "Certification Service", ".NET 9", "Tracks progress and issues certifications")
+    Container(notificationService, "Notification Service", ".NET 9", "Manages notifications and alerts")
+    
+    ContainerDb(learningDb, "Learning Database", "SQL Server", "Stores learning content, paths, and modules")
+    ContainerDb(assignmentDb, "Assignment Database", "SQL Server", "Stores assignments, submissions, and grades")
+    ContainerDb(forumDb, "Forum Database", "SQL Server", "Stores forum posts and discussions")
+    ContainerDb(userDb, "User Database", "SQL Server", "Stores user profiles and progress")
+    
+    Container(fileStorage, "File Storage", "Azure Blob Storage", "Stores assignment files and resources")
+    Container(eventBus, "Event Bus", "Azure Service Bus", "Handles asynchronous communication between services")
+}
+
+Rel(contentCreator, webApp, "Uses", "HTTPS")
+Rel(learner, webApp, "Uses", "HTTPS")
+Rel(reviewer, webApp, "Uses", "HTTPS")
+Rel(admin, webApp, "Uses", "HTTPS")
+
+Rel(webApp, graphqlApi, "Makes API calls to", "HTTPS/GraphQL")
+Rel(graphqlApi, apiGateway, "Routes requests through")
+
+Rel(apiGateway, learningService, "Routes learning requests to")
+Rel(apiGateway, assignmentService, "Routes assignment requests to")
+Rel(apiGateway, forumService, "Routes forum requests to")
+Rel(apiGateway, certificationService, "Routes certification requests to")
+Rel(apiGateway, notificationService, "Routes notification requests to")
+
+Rel(learningService, learningDb, "Reads from and writes to")
+Rel(assignmentService, assignmentDb, "Reads from and writes to")
+Rel(assignmentService, fileStorage, "Stores files in")
+Rel(forumService, forumDb, "Reads from and writes to")
+Rel(certificationService, learningDb, "Reads from")
+Rel(certificationService, assignmentDb, "Reads from")
+Rel(certificationService, userDb, "Reads from and writes to")
+Rel(notificationService, eventBus, "Publishes events to")
+
+Rel(learningService, youtubeSystem, "Embeds videos from", "HTTPS")
+Rel(learningService, calendarSystem, "Schedules events using", "HTTPS")
+Rel(notificationService, emailSystem, "Sends emails through", "SMTP")
+Rel(webApp, authSystem, "Authenticates using", "OAuth 2.0")
+
+Rel(eventBus, notificationService, "Triggers notifications in")
+
+@enduml

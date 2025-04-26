@@ -1,0 +1,106 @@
+@startuml C4_Deployment
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Deployment diagram for E-Learning Community Platform
+
+Deployment_Node(clientEnv, "Client Environment", "User Device") {
+    Deployment_Node(webBrowser, "Web Browser", "Chrome, Firefox, Safari, Edge") {
+        Container(wasmRuntime, "Blazor WASM App", ".NET 9", "Provides UI for the e-learning platform")
+    }
+}
+
+Deployment_Node(azureCloud, "Azure Cloud", "Cloud Platform") {
+    Deployment_Node(cdnService, "Content Delivery", "Azure CDN") {
+        Container(cdnContent, "Static Content", "HTML/CSS/JS", "Optimized delivery of static resources")
+    }
+    
+    Deployment_Node(appServicePlan, "App Service Plan", "Premium Tier") {
+        Deployment_Node(appService, "App Service", "Web App") {
+            Container(graphqlApiInstance, "GraphQL API", "Hot Chocolate, .NET 9", "Provides unified GraphQL schema")
+        }
+        
+        Deployment_Node(microservices, "Microservices", "Container Apps") {
+            Container(learningServiceInstance, "Learning Service", ".NET 9", "Manages learning paths and content")
+            Container(assignmentServiceInstance, "Assignment Service", ".NET 9", "Handles assignment workflows")
+            Container(forumServiceInstance, "Forum Service", ".NET 9", "Provides forum functionality")
+            Container(certificationServiceInstance, "Certification Service", ".NET 9", "Manages certifications")
+            Container(notificationServiceInstance, "Notification Service", ".NET 9", "Handles notifications")
+        }
+    }
+    
+    Deployment_Node(databaseCluster, "Database Cluster", "Azure SQL") {
+        Deployment_Node(primaryDb, "Primary Region", "East US") {
+            ContainerDb(sqlDbInstance, "SQL Database", "Azure SQL", "Stores application data")
+        }
+        Deployment_Node(secondaryDb, "Secondary Region", "West US") {
+            ContainerDb(sqlDbReplica, "SQL Database Replica", "Azure SQL", "Read replica")
+        }
+    }
+    
+    Deployment_Node(storageAccount, "Storage Account", "Azure Storage") {
+        ContainerDb(blobStorage, "Blob Storage", "Azure Blob", "Stores files and resources")
+    }
+    
+    Deployment_Node(serviceBus, "Service Bus", "Azure Service Bus") {
+        Container(serviceBusInstance, "Message Bus", "Azure Service Bus", "Handles asynchronous messaging")
+    }
+    
+    Deployment_Node(azureCache, "Cache Service", "Azure Redis Cache") {
+        Container(redisCache, "Redis Cache", "Azure Redis", "Provides distributed caching")
+    }
+    
+    Deployment_Node(identityService, "Identity", "Azure AD B2C") {
+        Container(identityInstance, "Identity Provider", "Azure AD B2C", "Manages authentication")
+    }
+    
+    Deployment_Node(monitoring, "Monitoring", "Azure Services") {
+        Container(appInsights, "Application Insights", "Azure Service", "Application monitoring")
+        Container(logAnalytics, "Log Analytics", "Azure Service", "Log aggregation and analysis")
+    }
+}
+
+Deployment_Node(externalServices, "External Services", "Third Party") {
+    System_Ext(youtubeInstance, "YouTube", "Video platform")
+    System_Ext(calendarInstance, "Calendar Service", "Event scheduling")
+    System_Ext(emailInstance, "Email Service", "SMTP provider")
+}
+
+Rel(wasmRuntime, cdnContent, "Loads static content from", "HTTPS")
+Rel(wasmRuntime, graphqlApiInstance, "Makes API calls to", "HTTPS/GraphQL")
+Rel(wasmRuntime, identityInstance, "Authenticates using", "OAuth 2.0")
+
+Rel(graphqlApiInstance, learningServiceInstance, "Routes learning requests to")
+Rel(graphqlApiInstance, assignmentServiceInstance, "Routes assignment requests to")
+Rel(graphqlApiInstance, forumServiceInstance, "Routes forum requests to")
+Rel(graphqlApiInstance, certificationServiceInstance, "Routes certification requests to")
+Rel(graphqlApiInstance, redisCache, "Caches responses in")
+
+Rel(learningServiceInstance, sqlDbInstance, "Reads from and writes to")
+Rel(assignmentServiceInstance, sqlDbInstance, "Reads from and writes to")
+Rel(forumServiceInstance, sqlDbInstance, "Reads from and writes to")
+Rel(certificationServiceInstance, sqlDbInstance, "Reads from and writes to")
+Rel(notificationServiceInstance, sqlDbInstance, "Reads from")
+
+Rel(assignmentServiceInstance, blobStorage, "Stores files in")
+Rel(learningServiceInstance, blobStorage, "Stores resources in")
+
+Rel(learningServiceInstance, serviceBusInstance, "Publishes events to")
+Rel(assignmentServiceInstance, serviceBusInstance, "Publishes events to")
+Rel(serviceBusInstance, notificationServiceInstance, "Sends messages to")
+
+Rel(learningServiceInstance, youtubeInstance, "Embeds videos from", "HTTPS")
+Rel(learningServiceInstance, calendarInstance, "Schedules events using", "HTTPS")
+Rel(notificationServiceInstance, emailInstance, "Sends emails through", "SMTP")
+
+Rel(sqlDbInstance, sqlDbReplica, "Replicates to")
+
+Rel(learningServiceInstance, appInsights, "Sends telemetry to")
+Rel(assignmentServiceInstance, appInsights, "Sends telemetry to")
+Rel(forumServiceInstance, appInsights, "Sends telemetry to")
+Rel(certificationServiceInstance, appInsights, "Sends telemetry to")
+Rel(notificationServiceInstance, appInsights, "Sends telemetry to")
+Rel(graphqlApiInstance, appInsights, "Sends telemetry to")
+
+@enduml

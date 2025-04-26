@@ -117,9 +117,18 @@ stateDiagram-v2
     Received --> Validating: Webhook triggers function
     Validating --> IdempotencyChecking: Validation successful
     Validating --> Rejected: Validation failed
+    
     IdempotencyChecking --> Journaling: New CDR
-    IdempotencyChecking --> Skipped: Duplicate CDR
-    Journaling --> Aggregating: Journal stored
+    IdempotencyChecking --> Skipped: Exact duplicate CDR
+    
+    Journaling --> VersionDetection: Journal stored
+    VersionDetection --> Aggregating: No version change
+    VersionDetection --> PreviousVersionRetrieval: New version detected
+    
+    PreviousVersionRetrieval --> DeltaComputation: Get previous version from blob
+    DeltaComputation --> AggregateRecomputation: Calculate change delta
+    AggregateRecomputation --> Aggregating: Apply delta to aggregates
+    
     Aggregating --> Completed: Aggregate updated
     Aggregating --> Failed: Error updating aggregate
     Failed --> Retry: After delay
@@ -129,7 +138,99 @@ stateDiagram-v2
     Completed --> [*]
 ```
 
-*This state diagram represents the processing flow of a CDR through the system, showing the validation, idempotency check, journaling, and aggregation steps.*
+*This state diagram represents the processing flow of a CDR through the system, showing the validation, idempotency check, journaling, and aggregation steps. The diagram includes an alternative path for version handling when updated CDR versions are received. For clarity, version detection occurs after the journal storage to ensure data is safely stored before any further processing.*
+
+#### Version-Based Delta Computation
+
+For clarity, we've added an alternative flow path to handle cases where an updated version of the same CDR is received. This is an important consideration because TandemDrive may send updated versions of previously submitted CDRs when corrections or adjustments are made to charging sessions.
+
+The system uses Azure Blob Storage's built-in versioning capabilities to manage this scenario efficiently:
+
+1. **Version Detection**: When a CDR with the same ID as an existing record is received, the system compares metadata to determine if it's a new version
+2. **Previous Version Retrieval**: If it's a new version, the system retrieves the previous version from blob storage
+3. **Delta Computation**: The system calculates the differences between versions (e.g., changes in energy, duration, or cost)
+4. **Aggregate Recomputation**: The system applies only the delta changes to the aggregates to avoid double-counting
+
+This approach ensures that aggregates remain accurate when CDR data is updated without having to rebuild the entire aggregate from scratch.
+
+##### Implementation Approach (Pseudocode)
+
+```csharp
+// Pseudocode for version-based delta computation
+public async Task ProcessCDRWithVersioning(CDR newCdrVersion)
+{
+    // Check if previous version exists
+    if (await _blobService.ExistsAsync(newCdrVersion.CdrId))
+    {
+        // Get metadata to determine version
+        var metadata = await _blobService.GetMetadataAsync(newCdrVersion.CdrId);
+        
+        if (IsDifferentVersion(metadata, newCdrVersion))
+        {
+            // Get previous version from blob storage using versioning API
+            var previousVersions = await _blobService.ListBlobVersionsAsync(newCdrVersion.CdrId);
+            var latestPreviousVersion = previousVersions.OrderByDescending(v => v.VersionId).First();
+            var previousCdr = await _blobService.GetBlobContentAsync(newCdrVersion.CdrId, latestPreviousVersion.VersionId);
+            
+            // Deserialize previous version
+            var previousCdrData = JsonSerializer.Deserialize<CDR>(previousCdr);
+            
+            // Calculate delta between versions
+            var energyDelta = newCdrVersion.Energy - previousCdrData.Energy;
+            var durationDelta = newCdrVersion.Duration - previousCdrData.Duration;
+            var costDelta = newCdrVersion.Cost - previousCdrData.Cost;
+            
+            // Get existing aggregate
+            var dateKey = newCdrVersion.Timestamp.ToString("yyyy-MM-dd");
+            var monthKey = newCdrVersion.Timestamp.ToString("yyyy-MM");
+            
+            var dailyAggregate = await _tableStorage.GetAggregateAsync(dateKey, newCdrVersion.EvseId);
+            var monthlyAggregate = await _tableStorage.GetAggregateAsync(monthKey, newCdrVersion.EvseId);
+            
+            // Apply deltas to aggregates
+            dailyAggregate.TotalEnergy += energyDelta;
+            dailyAggregate.TotalDuration += durationDelta;
+            dailyAggregate.TotalCost += costDelta;
+            // SessionCount remains unchanged since it's the same session
+            
+            monthlyAggregate.TotalEnergy += energyDelta;
+            monthlyAggregate.TotalDuration += durationDelta;
+            monthlyAggregate.TotalCost += costDelta;
+            
+            // Store updated aggregates
+            await _tableStorage.UpsertAggregateAsync(dailyAggregate);
+            await _tableStorage.UpsertAggregateAsync(monthlyAggregate);
+            
+            // Store new version in blob with versioning enabled
+            await _blobService.StoreWithVersioningAsync(newCdrVersion);
+            
+            _logger.LogInformation(
+                "Updated CDR version processed. ID: {CdrId}, Energy delta: {EnergyDelta}, Cost delta: {CostDelta}",
+                newCdrVersion.CdrId, energyDelta, costDelta);
+                
+            return;
+        }
+    }
+    
+    // If not a version update, proceed with normal processing flow...
+    await ProcessNormalCDR(newCdrVersion);
+}
+
+private bool IsDifferentVersion(BlobMetadata metadata, CDR newCdr)
+{
+    // Check if this is a different version based on metadata
+    // For example, compare version numbers or timestamps
+    return metadata.ContainsKey("version") && 
+           metadata["version"] != newCdr.Version;
+}
+```
+
+This versioning approach provides several benefits:
+1. **Accuracy**: Ensures aggregates reflect the most current data
+2. **Efficiency**: Avoids reprocessing all historical data when a single record changes
+3. **Auditability**: Preserves all versions of CDRs for compliance and reconciliation
+4. **Cost-Effective**: Leverages built-in Azure Blob Storage versioning rather than custom solutions
+5. **Idempotency**: Maintains the system's idempotent processing characteristics
 
 ### Data Model
 Key entities in the system include:
