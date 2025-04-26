@@ -3,62 +3,62 @@
 
 LAYOUT_WITH_LEGEND()
 
-title Deployment diagram for Order Management System
+title Deployment diagram for Example System
 
-Deployment_Node(customerDevice, "Customer Device", "Computer or Mobile") {
-    Deployment_Node(browser, "Web Browser", "Chrome, Firefox, Safari") {
-        Container(webAppInstance, "Web Application", "ASP.NET Core Blazor", "Provides functionality to customers via web interface")
+Deployment_Node(clientDevice, "Client Device", "Computer or Mobile") {
+    Deployment_Node(browser, "Web Browser", "Modern Browsers") {
+        Container(webAppInstance, "Web Application", "Web Framework", "Provides functionality to users via web interface")
     }
-    Deployment_Node(mobileRuntime, "Mobile App", "iOS/Android") {
-        Container(mobileAppInstance, "Mobile App", "Xamarin/.NET MAUI", "Provides functionality to customers via mobile")
+    Deployment_Node(mobileRuntime, "Mobile App", "Mobile OS") {
+        Container(mobileAppInstance, "Mobile App", "Mobile Framework", "Provides functionality to users via mobile")
     }
 }
 
-Deployment_Node(cloudProvider, "Cloud Provider", "Microsoft Azure") {
-    Deployment_Node(apiManagement, "API Management", "Azure Service") {
-        Container(apiGatewayInstance, "API Gateway", "Azure API Management", "Routes requests to appropriate services")
+Deployment_Node(cloudInfrastructure, "Cloud Infrastructure", "Cloud Provider") {
+    Deployment_Node(apiManagement, "API Management", "API Management Service") {
+        Container(apiGatewayInstance, "API Gateway", "Gateway Technology", "Routes requests to appropriate services")
     }
-    Deployment_Node(appServicePlan, "App Service Plan", "Premium Tier") {
-        Deployment_Node(graphqlAppService, "GraphQL API", "App Service") {
-            Container(graphqlApiInstance, "GraphQL API", "Hot Chocolate/.NET", "Provides unified GraphQL schema for clients")
+    Deployment_Node(appServices, "Application Services", "Compute Resources") {
+        Deployment_Node(apiService, "API Service", "Hosting Environment") {
+            Container(apiLayerInstance, "API Layer", "API Technology", "Provides unified API for clients")
         }
-        Deployment_Node(authAppService, "Authentication Service", "App Service") {
-            Container(authServiceInstance, "Authentication Service", "ASP.NET Core Identity/Azure AD B2C", "Handles user authentication and authorization")
+        Deployment_Node(authService, "Authentication Service", "Hosting Environment") {
+            Container(authServiceInstance, "Authentication Service", "Auth Technology", "Handles user authentication and authorization")
         }
-        Deployment_Node(coreAppService, "Core Service", "App Service") {
-            Container(coreServiceInstance, "Core Service", ".NET 7", "Implements core business logic")
-        }
-    }
-    Deployment_Node(serviceBus, "Azure Service Bus", "Standard Tier") {
-        Container(serviceBusInstance, "Message Bus", "Azure Service Bus", "Handles asynchronous communication between services")
-    }
-    Deployment_Node(cosmosDbAccount, "Cosmos DB Account", "Multi-region") {
-        Deployment_Node(cosmosDbPrimary, "Primary Region", "East US") {
-            ContainerDb(dbPrimaryInstance, "Cosmos DB", "Azure Cosmos DB", "Stores user, product, and order information")
-        }
-        Deployment_Node(cosmosDbSecondary, "Secondary Region", "West US") {
-            ContainerDb(dbSecondaryInstance, "Cosmos DB Replica", "Azure Cosmos DB", "Read replica")
+        Deployment_Node(businessService, "Business Service", "Hosting Environment") {
+            Container(coreServiceInstance, "Core Service", "Service Technology", "Implements core business logic")
         }
     }
-    Deployment_Node(azureMonitor, "Azure Monitor", "Monitoring Service") {
-        Container(appInsights, "Application Insights", "Azure Service", "Application monitoring and analytics")
+    Deployment_Node(messagingService, "Messaging Service", "Message Broker") {
+        Container(messageBusInstance, "Message Bus", "Messaging Technology", "Handles asynchronous communication between services")
+    }
+    Deployment_Node(dataStorage, "Data Storage", "Database Cluster") {
+        Deployment_Node(primaryRegion, "Primary Region", "Region A") {
+            ContainerDb(dbPrimaryInstance, "Database", "Database Technology", "Primary data storage")
+        }
+        Deployment_Node(secondaryRegion, "Secondary Region", "Region B") {
+            ContainerDb(dbSecondaryInstance, "Database Replica", "Database Technology", "Read replica")
+        }
+    }
+    Deployment_Node(monitoring, "Monitoring Service", "Monitoring Platform") {
+        Container(monitoringInstance, "Monitoring Tool", "Monitoring Technology", "System monitoring and analytics")
     }
 }
 
 Deployment_Node(externalSystems, "External Systems", "Third Party") {
-    System_Ext(emailSystemInstance, "Email System", "Azure Communication Services")
-    System_Ext(paymentSystemInstance, "Payment System", "Processes payments")
+    System_Ext(externalSystemA, "External System A", "Provides supporting service A")
+    System_Ext(externalSystemB, "External System B", "Provides supporting service B")
 }
 
-Rel(webAppInstance, graphqlApiInstance, "Makes GraphQL queries to", "HTTPS")
-Rel(mobileAppInstance, graphqlApiInstance, "Makes GraphQL queries to", "HTTPS")
-Rel(apiGatewayInstance, graphqlApiInstance, "Routes requests to")
-Rel(graphqlApiInstance, coreServiceInstance, "Calls")
-Rel(graphqlApiInstance, authServiceInstance, "Authenticates with")
+Rel(webAppInstance, apiLayerInstance, "Calls API on", "HTTPS")
+Rel(mobileAppInstance, apiLayerInstance, "Calls API on", "HTTPS")
+Rel(apiGatewayInstance, apiLayerInstance, "Routes requests to")
+Rel(apiLayerInstance, coreServiceInstance, "Calls")
+Rel(apiLayerInstance, authServiceInstance, "Authenticates with")
 Rel(coreServiceInstance, dbPrimaryInstance, "Reads from and writes to")
-Rel(coreServiceInstance, serviceBusInstance, "Publishes messages to")
-Rel(serviceBusInstance, emailSystemInstance, "Triggers notifications in")
-Rel(coreServiceInstance, paymentSystemInstance, "Makes payments using")
+Rel(coreServiceInstance, messageBusInstance, "Publishes messages to")
+Rel(messageBusInstance, externalSystemA, "Triggers events in")
+Rel(coreServiceInstance, externalSystemB, "Integrates with")
 Rel(dbPrimaryInstance, dbSecondaryInstance, "Replicates to")
 
 @enduml

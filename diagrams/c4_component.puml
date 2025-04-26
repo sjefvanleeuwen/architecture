@@ -5,37 +5,37 @@ LAYOUT_WITH_LEGEND()
 
 title Component diagram for Core Service
 
-Container(apiGateway, "API Gateway", "Azure API Management", "Routes requests to appropriate services")
-Container(graphqlApi, "GraphQL API", "Hot Chocolate/.NET", "Provides unified GraphQL schema for clients")
-ContainerDb(database, "Database", "Azure Cosmos DB", "Stores user, product, and order information")
-System_Ext(emailSystem, "Email System", "Azure Communication Services")
-System_Ext(paymentSystem, "Payment System", "Processes payments")
+Container(apiGateway, "API Gateway", "API Gateway Technology", "Routes requests to appropriate services")
+Container(apiLayer, "API Layer", "API Technology", "Provides unified API for clients")
+ContainerDb(database, "Database", "Database Technology", "Stores system information")
+System_Ext(externalSystem1, "External System A", "Provides supporting service A")
+System_Ext(externalSystem2, "External System B", "Provides supporting service B")
 
 Container_Boundary(coreService, "Core Service") {
-    Component(orderResolver, "Order Resolver", "GraphQL Resolver", "Handles order-related GraphQL queries and mutations")
-    Component(productResolver, "Product Resolver", "GraphQL Resolver", "Handles product-related GraphQL queries and mutations")
-    Component(orderService, "Order Service", ".NET Service", "Handles order business logic")
-    Component(productService, "Product Service", ".NET Service", "Handles product business logic")
-    Component(notificationService, "Notification Service", ".NET Service", "Handles notification logic")
-    Component(paymentAdapter, "Payment Adapter", ".NET Service", "Adapts to payment gateway API")
-    Component(orderRepository, "Order Repository", "EF Core/Cosmos SDK", "Provides data access for orders")
-    Component(productRepository, "Product Repository", "EF Core/Cosmos SDK", "Provides data access for products")
+    Component(domainAResolver, "Domain A Resolver", "API Resolver", "Handles Domain A API operations")
+    Component(domainBResolver, "Domain B Resolver", "API Resolver", "Handles Domain B API operations")
+    Component(domainAService, "Domain A Service", "Business Logic", "Handles Domain A business logic")
+    Component(domainBService, "Domain B Service", "Business Logic", "Handles Domain B business logic")
+    Component(integrationService, "Integration Service", "Service", "Handles external integration logic")
+    Component(externalAdapter, "External Adapter", "Adapter", "Adapts to external system APIs")
+    Component(domainARepository, "Domain A Repository", "Data Access", "Provides data access for Domain A")
+    Component(domainBRepository, "Domain B Repository", "Data Access", "Provides data access for Domain B")
 }
 
-Rel(graphqlApi, orderResolver, "Delegates GraphQL operations to")
-Rel(graphqlApi, productResolver, "Delegates GraphQL operations to")
+Rel(apiLayer, domainAResolver, "Delegates Domain A operations to")
+Rel(apiLayer, domainBResolver, "Delegates Domain B operations to")
 
-Rel(orderResolver, orderService, "Uses")
-Rel(productResolver, productService, "Uses")
+Rel(domainAResolver, domainAService, "Uses")
+Rel(domainBResolver, domainBService, "Uses")
 
-Rel(orderService, orderRepository, "Uses")
-Rel(orderService, notificationService, "Uses")
-Rel(orderService, paymentAdapter, "Uses")
-Rel(productService, productRepository, "Uses")
+Rel(domainAService, domainARepository, "Uses")
+Rel(domainAService, integrationService, "Uses")
+Rel(domainAService, externalAdapter, "Uses")
+Rel(domainBService, domainBRepository, "Uses")
 
-Rel(orderRepository, database, "Reads from and writes to")
-Rel(productRepository, database, "Reads from and writes to")
-Rel(notificationService, emailSystem, "Sends emails using")
-Rel(paymentAdapter, paymentSystem, "Makes payments using")
+Rel(domainARepository, database, "Reads from and writes to")
+Rel(domainBRepository, database, "Reads from and writes to")
+Rel(integrationService, externalSystem1, "Integrates with")
+Rel(externalAdapter, externalSystem2, "Connects to")
 
 @enduml

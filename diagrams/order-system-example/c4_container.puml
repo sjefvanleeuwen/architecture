@@ -1,0 +1,36 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container diagram for Order Management System
+
+Person(customer, "Customer", "A user of the system")
+System_Ext(emailSystem, "Email System", "Azure Communication Services")
+System_Ext(paymentSystem, "Payment System", "Processes payments")
+
+System_Boundary(systemBoundary, "Order Management System") {
+    Container(webApp, "Web Application", "ASP.NET Core Blazor", "Provides functionality to customers via web interface")
+    Container(mobileApp, "Mobile App", "Xamarin/.NET MAUI", "Provides functionality to customers via mobile")
+    Container(apiGateway, "API Gateway", "Azure API Management", "Routes requests to appropriate services")
+    Container(graphqlApi, "GraphQL API", "Hot Chocolate/.NET", "Provides unified GraphQL schema for clients")
+    Container(authService, "Authentication Service", "ASP.NET Core Identity/Azure AD B2C", "Handles user authentication and authorization")
+    Container(coreService, "Core Service", ".NET 7", "Implements core business logic")
+    ContainerDb(database, "Database", "Azure Cosmos DB", "Stores user, product, and order information")
+    Container(messaging, "Message Bus", "Azure Service Bus", "Handles asynchronous communication between services")
+}
+
+Rel(customer, webApp, "Uses", "HTTPS")
+Rel(customer, mobileApp, "Uses")
+Rel(webApp, graphqlApi, "Makes GraphQL queries to", "HTTPS")
+Rel(mobileApp, graphqlApi, "Makes GraphQL queries to", "HTTPS")
+Rel(graphqlApi, apiGateway, "Routes requests through")
+Rel(apiGateway, authService, "Routes auth requests to")
+Rel(apiGateway, coreService, "Routes business requests to")
+Rel(authService, database, "Reads from and writes to")
+Rel(coreService, database, "Reads from and writes to")
+Rel(coreService, messaging, "Publishes messages to")
+Rel(messaging, emailSystem, "Triggers email notifications")
+Rel(coreService, paymentSystem, "Makes payments using")
+
+@enduml

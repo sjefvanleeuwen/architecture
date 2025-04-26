@@ -40,40 +40,134 @@
 [Explain how the architecture is represented using the 4+1 View Model approach and how the views relate to each other.]
 
 ## Architectural Goals and Constraints
-[Describe the software requirements and objectives that have significant impact on the architecture, such as technical constraints, quality requirements, or business constraints.]
+The architecture is designed to meet the following goals and constraints:
+
+### Goals
+- [Goal 1]
+- [Goal 2]
+- [Goal 3]
+- [Goal 4]
+- [Goal 5]
+
+### Constraints
+- [Constraint 1]
+- [Constraint 2]
+- [Constraint 3]
+- [Constraint 4]
+- [Constraint 5]
 
 ## Use Case View ("+1" View)
-[This view represents the scenarios and use cases that drove the architectural design.]
+The use case view represents the key scenarios that the system must support.
 
 ### Key Use Cases
-[Describe the architecturally significant use cases and scenarios that shaped the architecture.]
+1. **[Use Case 1]**: [Brief description]
+2. **[Use Case 2]**: [Brief description]
+3. **[Use Case 3]**: [Brief description]
+4. **[Use Case 4]**: [Brief description]
+5. **[Use Case 5]**: [Brief description]
 
 ### Use Case Diagrams
-[Include use case diagrams that illustrate the key functionality of the system from the user's perspective.]
+![Context Diagram](out/diagrams/c4_context/C4_Context.svg)
+
+*[Description of how this context diagram illustrates system interactions]*
 
 ## Logical View
-[This view describes the key functional elements of the system and their responsibilities, interfaces, and primary interactions.]
+The logical view describes the key functional elements of the system.
 
 ### Overview
 [Provide a high-level description of the logical architecture.]
 
 ### Package/Component Architecture
-[Describe the decomposition of the system into packages, layers, or other logical groupings.]
+The system is organized into the following key components:
+- **[Component 1]**: [Brief description]
+- **[Component 2]**: [Brief description]
+- **[Component 3]**: [Brief description]
+- **[Component 4]**: [Brief description]
+- **[Component 5]**: [Brief description]
 
 ### Important Class Diagrams
-[Include UML class diagrams for key classes/components and their relationships.]
+![Component Diagram](out/diagrams/c4_component/C4_Component.svg)
+
+*[Description of what this component diagram shows about the system structure]*
 
 ### State Machine Diagrams
-[Include state diagrams for elements with complex state behavior.]
+[Describe the key state transitions for important system entities]
+
+```mermaid
+stateDiagram-v2
+    [*] --> State1
+    State1 --> State2: Transition trigger
+    State2 --> State3: Transition trigger
+    State3 --> State4: Transition trigger
+    
+    State2 --> AlternateState: Alternative path
+    State3 --> AlternateState2: Alternative path
+```
+
+*[Description of what this state diagram represents]*
 
 ### Data Model
-[Describe the domain model and data structures.]
+Key entities in the system include:
+- [Entity 1]
+- [Entity 2]
+- [Entity 3]
+- [Entity 4]
+- [Entity 5]
+
+```mermaid
+erDiagram
+    ENTITY1 ||--o{ ENTITY2 : relationship
+    ENTITY1 {
+        type field1
+        type field2
+        type field3
+    }
+    ENTITY2 ||--|{ ENTITY3 : relationship
+    ENTITY2 {
+        type field1
+        type field2
+        type field3
+    }
+    ENTITY3 {
+        type field1
+        type field2
+        type field3
+    }
+    ENTITY4 ||--|| ENTITY2 : relationship
+    ENTITY4 {
+        type field1
+        type field2
+    }
+```
+
+*[Description of what this ER diagram shows about the data relationships]*
 
 ## Process View
-[This view describes the system's dynamic aspects, concurrency, synchronization, and how the main abstractions from the logical view map into processes at runtime.]
+The process view describes the system's dynamic aspects.
 
 ### Process Description
-[Describe the processes in the system and how they communicate.]
+[Describe the key processes and workflows in the system]
+
+```mermaid
+sequenceDiagram
+    actor Actor1
+    participant System1
+    participant System2
+    participant System3
+    
+    Actor1->>System1: Action
+    System1->>System2: Request
+    System2-->>System1: Response
+    
+    alt Condition
+        System1->>System3: Action
+        System3-->>System1: Result
+    else Alternative
+        System1->>Actor1: Alternative action
+    end
+```
+
+*[Description of what this sequence diagram illustrates about process flow]*
 
 ### Thread Usage
 [Describe how threading is used and managed.]
@@ -82,10 +176,12 @@
 [Describe the mechanisms used for communication between processes.]
 
 ### Process Diagrams
-[Include activity diagrams, sequence diagrams, or other diagrams that illustrate dynamic behavior.]
+![Container Diagram](out/diagrams/c4_container/C4_Container.svg)
+
+*[Description of what this container diagram shows about system interactions]*
 
 ## Development View
-[This view describes the system from a programmer's perspective and is concerned with software management.]
+The development view describes the system from a programmer's perspective.
 
 ### Module Organization
 [Describe the organization of software modules, their dependencies, and interfaces.]
@@ -93,27 +189,142 @@
 ### Common Design Patterns
 [Describe any design patterns used consistently across the system.]
 
+### Data Mapping Strategy
+The system employs a data mapping strategy to ensure loose coupling between layers and components:
+
+#### Mapping Principles
+- **[Principle 1]**: [Description]
+- **[Principle 2]**: [Description]
+- **[Principle 3]**: [Description]
+- **[Principle 4]**: [Description]
+
+```mermaid
+flowchart LR
+    subgraph Group1
+        Component1[Component 1]
+        Component2[Component 2]
+    end
+    
+    subgraph Group2
+        Component3[Component 3]
+        Component4[Component 4]
+    end
+    
+    subgraph Group3
+        Component5[Component 5]
+        Component6[Component 6]
+    end
+    
+    Component1 <--> |Mapper| Component3
+    Component2 <--> |Mapper| Component4
+    Component3 <--> |Mapper| Component5
+    Component4 <--> |Mapper| Component6
+```
+
+*[Description of the data mapping flow between system components]*
+
+#### Data Mapping Tables
+
+##### [Layer 1] to [Layer 2] Mappings
+
+| Source Field | Target Field | Transformation |
+|-------------|-------------|----------------|
+| `Source.Field1` | `Target.Field1` | [Transformation description] |
+| `Source.Field2` | `Target.Field2` | [Transformation description] |
+| `Source.Field3` | `Target.Field3` | [Transformation description] |
+| `Source.Field4` | `Target.Field4` | [Transformation description] |
+
+##### [Layer 2] to [Layer 3] Mappings
+
+| Source Field | Target Field | Type | Description |
+|-------------|-------------|------|-------------|
+| `Source.Field1` | `Target.Field1` | `Type` | [Description] |
+| `Source.Field2` | `Target.Field2` | `Type` | [Description] |
+| `Source.Field3` | `Target.Field3` | `Type` | [Description] |
+| `Source.Field4` | `Target.Field4` | `Type` | [Description] |
+
+#### Benefits
+[Describe the benefits of the data mapping approach used]
+
 ### Development Standards
 [Describe coding standards, tools, and other development conventions.]
 
 ### Package Diagrams
-[Include package diagrams showing software organization.]
+Component structure follows a layered architecture pattern:
+- [Layer 1]
+- [Layer 2]
+- [Layer 3]
+- [Layer 4]
+
+```mermaid
+classDiagram
+    class Layer1 {
+        +Operation1()
+        +Operation2()
+    }
+    
+    class Layer2 {
+        +Operation1()
+        +Operation2()
+        +Operation3()
+    }
+    
+    class Layer3 {
+        +Operation1()
+        +Operation2()
+    }
+    
+    class Layer4 {
+        +Component1
+        +Component2
+    }
+    
+    Layer1 --> Layer2
+    Layer2 --> Layer3
+    Layer3 --> Layer4
+```
+
+*[Description of what this class diagram shows about the layered architecture]*
 
 ## Physical View
-[This view describes the mapping of software onto hardware and the physical connections between system components.]
+The physical view maps software to hardware infrastructure.
 
 ### Deployment Topology
-[Describe how software is assigned to hardware nodes, including servers, clients, and middleware connections.]
+![Deployment Diagram](out/diagrams/c4_deployment/C4_Deployment.svg)
+
+*[Description of what this deployment diagram shows about the physical infrastructure]*
 
 ### Infrastructure Requirements
-[Describe the infrastructure requirements of the system, such as networks, servers, and storage.]
+[Describe the infrastructure requirements of the system, such as servers, networks, and storage.]
 
 ### Deployment Diagram
-[Include UML deployment diagrams showing the physical layout of the system.]
+[Describe how software is deployed onto hardware nodes]
+
+### Deployment Strategy
+The system is deployed using the following strategy:
+
+```mermaid
+flowchart LR
+    Node1[First Stage] --> Node2[Second Stage]
+    Node2 --> Node3[Third Stage]
+    Node3 --> Node4[Fourth Stage]
+    
+    subgraph "Group1"
+        Node1
+        Node2
+    end
+    
+    subgraph "Group2"
+        Node3
+        Node4
+    end
+    
+    Node4 -- Relation --> Node5[Additional Node]
+```
+
+*[Description of what this flowchart shows about the deployment strategy]*
 
 ## Size and Performance
-[Describe the major performance requirements and constraints that affect the architecture.]
-
 ### Response Time
 [Describe expectations for system response times for key operations.]
 
@@ -127,8 +338,6 @@
 [Describe the expected utilization of computing resources.]
 
 ## Quality Attributes
-[Describe how the architecture supports quality attributes.]
-
 ### Security
 [Describe the security features and mechanisms of the system.]
 
@@ -148,4 +357,11 @@
 [List all documents referenced in this architecture document.]
 
 ## Appendices
-[Include any additional information that supports the architecture document.]
+### Appendix A: Decision Records
+[Document key architectural decisions and their rationales.]
+
+### Appendix B: Risk Assessment
+[Provide risk assessment related to the architecture.]
+
+### Appendix C: Performance Test Results
+[Summarize performance test results if available.]

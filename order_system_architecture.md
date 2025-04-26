@@ -87,7 +87,7 @@ The use case view represents the key scenarios that the OMS must support.
 7. **Manage Products**: Admin adds, updates, or removes products from catalog
 
 ### Use Case Diagrams
-![Context Diagram](out/diagrams/c4_context/C4_Context.svg)
+![Context Diagram](out/diagrams/order-system-example/c4_context/C4_Context.svg)
 
 *The context diagram shows how the OMS interacts with external users and systems.*
 
@@ -106,7 +106,7 @@ The system is organized into the following key components:
 - **Database**: Stores system data (orders, products, users)
 
 ### Important Class Diagrams
-![Component Diagram](out/diagrams/c4_component/C4_Component.svg)
+![Component Diagram](out/diagrams/order-system-example/c4_component/C4_Component.svg)
 
 *The component diagram shows the internal structure of the Core Service and its relationships with other components.*
 
@@ -254,7 +254,7 @@ sequenceDiagram
 - Azure Redis Cache for caching and distributed locking
 
 ### Process Diagrams
-![Container Diagram](out/diagrams/c4_container/C4_Container.svg)
+![Container Diagram](out/diagrams/order-system-example/c4_container/C4_Container.svg)
 
 *The container diagram illustrates how the different containers (applications and data stores) within the OMS interact.*
 
@@ -423,7 +423,7 @@ classDiagram
 The physical view maps software to hardware infrastructure.
 
 ### Deployment Topology
-![Deployment Diagram](out/diagrams/c4_deployment/C4_Deployment.svg)
+![Deployment Diagram](out/diagrams/order-system-example/c4_deployment/C4_Deployment.svg)
 
 *The deployment diagram shows how the OMS components are deployed to physical infrastructure.*
 

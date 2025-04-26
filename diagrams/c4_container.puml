@@ -3,34 +3,34 @@
 
 LAYOUT_WITH_LEGEND()
 
-title Container diagram for Order Management System
+title Container diagram for Example System
 
-Person(customer, "Customer", "A user of the system")
-System_Ext(emailSystem, "Email System", "Azure Communication Services")
-System_Ext(paymentSystem, "Payment System", "Processes payments")
+Person(user, "User", "A user of the system")
+System_Ext(externalSystem1, "External System A", "Provides supporting service A")
+System_Ext(externalSystem2, "External System B", "Provides supporting service B")
 
-System_Boundary(systemBoundary, "Order Management System") {
-    Container(webApp, "Web Application", "ASP.NET Core Blazor", "Provides functionality to customers via web interface")
-    Container(mobileApp, "Mobile App", "Xamarin/.NET MAUI", "Provides functionality to customers via mobile")
-    Container(apiGateway, "API Gateway", "Azure API Management", "Routes requests to appropriate services")
-    Container(graphqlApi, "GraphQL API", "Hot Chocolate/.NET", "Provides unified GraphQL schema for clients")
-    Container(authService, "Authentication Service", "ASP.NET Core Identity/Azure AD B2C", "Handles user authentication and authorization")
-    Container(coreService, "Core Service", ".NET 7", "Implements core business logic")
-    ContainerDb(database, "Database", "Azure Cosmos DB", "Stores user, product, and order information")
-    Container(messaging, "Message Bus", "Azure Service Bus", "Handles asynchronous communication between services")
+System_Boundary(systemBoundary, "Example System") {
+    Container(webApp, "Web Application", "Web Framework", "Provides functionality to users via web interface")
+    Container(mobileApp, "Mobile App", "Mobile Framework", "Provides functionality to users via mobile")
+    Container(apiGateway, "API Gateway", "API Gateway", "Routes requests to appropriate services")
+    Container(apiLayer, "API Layer", "API Technology", "Provides unified API for clients")
+    Container(authService, "Authentication Service", "Auth Technology", "Handles user authentication and authorization")
+    Container(coreService, "Core Service", "Service Technology", "Implements core business logic")
+    ContainerDb(database, "Database", "Database Technology", "Stores system information")
+    Container(messaging, "Message Bus", "Messaging Technology", "Handles asynchronous communication between services")
 }
 
-Rel(customer, webApp, "Uses", "HTTPS")
-Rel(customer, mobileApp, "Uses")
-Rel(webApp, graphqlApi, "Makes GraphQL queries to", "HTTPS")
-Rel(mobileApp, graphqlApi, "Makes GraphQL queries to", "HTTPS")
-Rel(graphqlApi, apiGateway, "Routes requests through")
+Rel(user, webApp, "Uses", "HTTPS")
+Rel(user, mobileApp, "Uses")
+Rel(webApp, apiLayer, "Makes API calls to", "HTTPS")
+Rel(mobileApp, apiLayer, "Makes API calls to", "HTTPS")
+Rel(apiLayer, apiGateway, "Routes requests through")
 Rel(apiGateway, authService, "Routes auth requests to")
 Rel(apiGateway, coreService, "Routes business requests to")
 Rel(authService, database, "Reads from and writes to")
 Rel(coreService, database, "Reads from and writes to")
 Rel(coreService, messaging, "Publishes messages to")
-Rel(messaging, emailSystem, "Triggers email notifications")
-Rel(coreService, paymentSystem, "Makes payments using")
+Rel(messaging, externalSystem1, "Triggers notifications")
+Rel(coreService, externalSystem2, "Integrates with")
 
 @enduml
